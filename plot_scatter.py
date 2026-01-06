@@ -70,10 +70,11 @@ def load_all_corner_data():
     """
     Load corner data for all devices and parameters.
     Corner files follow naming: xxx.lis -> xxx_global_corner.lis
-    Each corner file contains 5 values corresponding to: TT, FF_G, SS_G, FNSP_G, SNFP_G
-    Structure: corner_data['PG']['idlin'] = [5 values]
+    Each corner file contains values corresponding to: TT, FF_G, SS_G, FNSP_G, SNFP_G
+    Structure: corner_data['PG']['idlin'] = [values]
     """
     corner_data = {}
+    expected_corners = len(CORNER_NAMES)
     for device in DEVICES:
         corner_data[device] = {}
         for param, file_template in FILE_TEMPLATES.items():
@@ -84,14 +85,14 @@ def load_all_corner_data():
             pattern = SEARCH_PATTERNS[param]
             values = extract_data(corner_file, pattern)
             
-            # Should have exactly 5 values (one for each corner)
-            if len(values) == 5:
+            # Should have exactly expected_corners values (one for each corner)
+            if len(values) == expected_corners:
                 corner_data[device][param] = np.array(values)
                 print(f"Loaded {len(values)} corner points for {device} - {param}")
             else:
                 corner_data[device][param] = np.array([])
                 if len(values) > 0:
-                    print(f"Warning: Expected 5 corner values but got {len(values)} for {device} - {param}")
+                    print(f"Warning: Expected {expected_corners} corner values but got {len(values)} for {device} - {param}")
     return corner_data
 
 def add_correlation_text(ax, x_data, y_data):
@@ -131,8 +132,9 @@ def plot_scatter(ax, x, y, title, xlabel, ylabel, color='blue', corner_x=None, c
 
     ax.scatter(x, y, alpha=0.6, s=20, c=color, edgecolors='black', linewidth=0.5)
     
-    # Plot corner points if provided
-    if corner_x is not None and corner_y is not None and len(corner_x) > 0 and len(corner_y) > 0:
+    # Plot corner points if provided and valid
+    if (corner_x is not None and corner_y is not None and 
+        len(corner_x) > 0 and len(corner_y) > 0):
         plot_corners(ax, corner_x, corner_y, corner_labels)
     
     ax.set_title(title, fontsize=12, fontweight='bold')
@@ -154,6 +156,9 @@ def plot_corners(ax, corner_x, corner_y, corner_labels):
     """
     # Ensure we have matching lengths
     num_corners = min(len(corner_x), len(corner_y))
+    if num_corners == 0:
+        return  # Nothing to plot
+    
     if corner_labels is None:
         corner_labels = [f'C{i}' for i in range(num_corners)]
     else:
