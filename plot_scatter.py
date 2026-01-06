@@ -121,7 +121,7 @@ def add_correlation_text(ax, x_data, y_data, label='', y_position=0.95):
         r_value = corr_matrix[0, 1]
         
         # Add text box
-        text_str = f'{label}R = {r_value:.4f}\nN = {len(x_data)}' if label else f'R = {r_value:.4f}\nN = {len(x_data)}'
+        text_str = f'{label}R = {r_value:.4f}\nN = {len(x_data)}'
         ax.text(0.05, y_position, text_str, 
                 transform=ax.transAxes, 
                 verticalalignment='top',
@@ -249,7 +249,8 @@ def plot_corners(ax, corner_x, corner_y, corner_labels, color='red', marker_size
     corner_y = corner_y[:num_corners]
     
     # Determine edge color based on marker color
-    edge_color = 'darkred' if color == 'red' else 'darkblue' if color == 'blue' else 'black'
+    edge_colors = {'red': 'darkred', 'blue': 'darkblue'}
+    edge_color = edge_colors.get(color, 'black')
     
     # Plot corner points with distinctive marker
     ax.scatter(corner_x, corner_y, 
